@@ -6,6 +6,7 @@ local userInputService = game:GetService("UserInputService");
 local localPlayer = players.LocalPlayer;
 local coreGui = game:GetService("CoreGui");
 local marketplaceService = game:GetService("MarketplaceService");
+local ReplicatedStorage = game:GetService("ReplicatedStorage");
 
 local DEFAULT_THEME_COLOR = Color3.fromRGB(220, 30, 30);
 
@@ -30,7 +31,7 @@ end
 
 local supportedGames = {
     { Name = "PetSimulator99", Key = "pet simulator 99" },
-    { Name = "GrowAGarden2",  Key = "grow a garden" },
+    { Name = "GrowAGarden2",   Key = "grow a garden" },
     { Name = "Fisch",          Key = "fisch" },
     { Name = "BloxFruits",      Key = "blox fruits" },
     { Name = "CageFishing",    Key = "cage fishing" },
@@ -84,17 +85,14 @@ registerThemeBorder(_G.MainStroke);
 local toggleButton = Instance.new("ImageButton", screenGui)
 toggleButton.Name = "UIToggleButton"
 toggleButton.Size = UDim2.new(0, 50, 0, 50)
-
--- Positioned at the top-center of your screen
 toggleButton.Position = UDim2.new(0.5, -25, 0, 15) 
 toggleButton.BackgroundColor3 = Color3.fromRGB(12, 12, 14)
 toggleButton.BorderSizePixel = 0
 toggleButton.Active = true
 toggleButton.Draggable = true
 
--- Ensure the ID is passed cleanly without syntax errors
 local imageId = "464093673"
-toggleButton.Image = "rbxassetid://464093673" .. imageId 
+toggleButton.Image = "rbxassetid://" .. imageId 
 
 Instance.new("UICorner", toggleButton).CornerRadius = UDim.new(1, 0)
 
@@ -104,10 +102,10 @@ toggleStroke.Color = DEFAULT_THEME_COLOR
 toggleStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 registerThemeBorder(toggleStroke)
 
--- Toggle main frame visibility
 toggleButton.MouseButton1Click:Connect(function()
     mainFrame.Visible = not mainFrame.Visible
 end)
+
 -- ==========================================
 -- 2. SIDEBAR NAVIGATION
 -- ==========================================
@@ -141,7 +139,6 @@ local btnLayout = Instance.new("UIListLayout", tabContainer);
 btnLayout.Padding = UDim.new(0, 4);
 btnLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center;
 
--- Header Close Button (Hides GUI)
 local headerBar = Instance.new("Frame", mainFrame);
 headerBar.Size = UDim2.new(1, -150, 0, 30);
 headerBar.Position = UDim2.new(0, 150, 0, 0);
@@ -222,7 +219,6 @@ local function createTextLabel(text, size, font, parent)
     return l;
 end
 
--- Standard Tabs Configuration
 local standardTabNames = {"Home", "Troll", "Themes", "Exploits", "WorkingGames", "GlobalExploits"};
 for _, tName in ipairs(standardTabNames) do
     local tabFrame = Instance.new("Frame", contentContainer);
@@ -281,6 +277,154 @@ task.spawn(function()
     local success, placeInfo = pcall(function() return marketplaceService:GetProductInfo(game.PlaceId) end)
     gLabel.Text = "Game: " .. (success and placeInfo.Name or game.Name);
 end);
+
+-- ==========================================
+-- EXPLOITS TAB CONTENT (INCLUDES SEED SHOP DROPDOWN)
+-- ==========================================
+local exploitsPage = _G.HollowTabs.Exploits;
+local exploitsLayout = Instance.new("UIListLayout", exploitsPage);
+exploitsLayout.Padding = UDim.new(0, 10);
+
+local activeGameFound = false;
+
+for _, gameData in ipairs(supportedGames) do
+    if string.find(currentGameName, gameData.Key) then
+        activeGameFound = true;
+        
+        local gamePanelFrame = Instance.new("Frame", exploitsPage);
+        gamePanelFrame.Size = UDim2.new(1, 0, 0, 40); 
+        gamePanelFrame.BackgroundTransparency = 1;
+        
+        local panelTitle = createTextLabel(gameData.Name .. " Panel", 16, Enum.Font.GothamMedium, gamePanelFrame);
+        panelTitle.Size = UDim2.new(1, 0, 0, 25);
+    end
+end
+
+if not activeGameFound then
+    local noGameLabel = createTextLabel("No active game modules for this place.", 13, Enum.Font.GothamMedium, exploitsPage);
+    noGameLabel.Size = UDim2.new(1, 0, 0, 25);
+end
+
+
+
+
+
+-- CONTAINER TO HOLD DROPDOWN ON THE RIGHT
+local rightContainer = Instance.new("Frame", exploitsPage)
+rightContainer.Name = "RightAlignedContainer"
+rightContainer.Size = UDim2.new(1, 0, 0, 200)
+rightContainer.BackgroundTransparency = 1
+
+-- SEED SHOP TOGGLE DROPDOWN (INSIDE CONTAINER - ALIGNED TO RIGHT EDGE)
+local dropdownFrame = Instance.new("Frame", rightContainer)
+dropdownFrame.Name = "SeedItemsDropdown"
+dropdownFrame.Size = UDim2.new(0, 160, 1, 0) -- Thinner width (160px)
+dropdownFrame.Position = UDim2.new(1, -170, 0, 0) -- Moves 170px back from the right edge
+dropdownFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+dropdownFrame.BorderSizePixel = 0
+
+Instance.new("UICorner", dropdownFrame).CornerRadius = UDim.new(0, 6)
+
+local dropdownStroke = Instance.new("UIStroke", dropdownFrame)
+dropdownStroke.Thickness = 1
+dropdownStroke.Color = Color3.fromRGB(40, 40, 45)
+
+-- Header Label
+local header = Instance.new("TextLabel", dropdownFrame)
+header.Size = UDim2.new(1, -10, 0, 30)
+header.Position = UDim2.new(0, 5, 0, 5)
+header.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+header.Text = "SeedsToggle"
+header.TextColor3 = DEFAULT_THEME_COLOR
+header.TextSize = 13
+header.Font = Enum.Font.GothamBold
+registerThemeText(header)
+
+Instance.new("UICorner", header).CornerRadius = UDim.new(0, 6)
+
+-- Scrollable Container for Toggles
+local scrollCanvas = Instance.new("ScrollingFrame", dropdownFrame)
+scrollCanvas.Size = UDim2.new(1, -10, 1, -45)
+scrollCanvas.Position = UDim2.new(0, 5, 0, 40)
+scrollCanvas.BackgroundTransparency = 1
+scrollCanvas.ScrollBarThickness = 4
+scrollCanvas.BorderSizePixel = 0
+
+local listLayout = Instance.new("UIListLayout", scrollCanvas)
+listLayout.Padding = UDim.new(0, 4)
+listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+listLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    scrollCanvas.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y)
+end)
+
+-- Table to keep track of toggle states for each item
+_G.SeedItemToggles = _G.SeedItemToggles or {}
+
+task.spawn(function()
+    local stockValues = ReplicatedStorage:WaitForChild("StockValues", 10)
+    local seedShop = stockValues and stockValues:WaitForChild("SeedShop", 10)
+    local itemsFolder = seedShop and seedShop:WaitForChild("Items", 10)
+
+    if itemsFolder then
+        local function populateDropdown()
+            for _, child in ipairs(scrollCanvas:GetChildren()) do
+                if child:IsA("TextButton") then
+                    child:Destroy()
+                end
+            end
+
+            for _, item in ipairs(itemsFolder:GetChildren()) do
+                if _G.SeedItemToggles[item.Name] == nil then
+                    _G.SeedItemToggles[item.Name] = false
+                end
+
+                local itemBtn = Instance.new("TextButton")
+                itemBtn.Name = item.Name
+                itemBtn.Size = UDim2.new(1, -6, 0, 25)
+                
+                local isEnabled = _G.SeedItemToggles[item.Name]
+                itemBtn.BackgroundColor3 = isEnabled and Color3.fromRGB(35, 55, 35) or Color3.fromRGB(30, 30, 38)
+                itemBtn.Text = "  " .. item.Name .. (isEnabled and " [ON]" or " [OFF]")
+                itemBtn.TextColor3 = isEnabled and Color3.fromRGB(80, 255, 120) or Color3.fromRGB(180, 180, 180)
+                itemBtn.TextSize = 12
+                itemBtn.Font = Enum.Font.GothamMedium
+                itemBtn.TextXAlignment = Enum.TextXAlignment.Left
+                itemBtn.Parent = scrollCanvas
+
+                Instance.new("UICorner", itemBtn).CornerRadius = UDim.new(0, 4)
+
+                -- Dynamic Stroke Border for visual toggle status
+                local itemStroke = Instance.new("UIStroke", itemBtn)
+                itemStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                itemStroke.Thickness = 1
+                itemStroke.Color = isEnabled and Color3.fromRGB(80, 255, 120) or Color3.fromRGB(45, 45, 50)
+
+                -- Toggle event on click
+                itemBtn.MouseButton1Click:Connect(function()
+                    _G.SeedItemToggles[item.Name] = not _G.SeedItemToggles[item.Name]
+                    local activeState = _G.SeedItemToggles[item.Name]
+
+                    itemBtn.Text = "  " .. item.Name .. (activeState and " [ON]" or " [OFF]")
+                    itemBtn.BackgroundColor3 = activeState and Color3.fromRGB(35, 55, 35) or Color3.fromRGB(30, 30, 38)
+                    itemBtn.TextColor3 = activeState and Color3.fromRGB(80, 255, 120) or Color3.fromRGB(180, 180, 180)
+                    itemStroke.Color = activeState and Color3.fromRGB(80, 255, 120) or Color3.fromRGB(45, 45, 50)
+
+                    print(item.Name .. " toggled:", activeState)
+                end)
+            end
+        end
+
+        populateDropdown()
+        itemsFolder.ChildAdded:Connect(populateDropdown)
+        itemsFolder.ChildRemoved:Connect(populateDropdown)
+    else
+        header.Text = "StockValues / Items not found"
+    end
+end)
+
+
+
 
 -- ==========================================
 -- TROLL TAB CONTENT (EMOTE PLAYER SYSTEM)
@@ -346,7 +490,6 @@ stopStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border;
 stopStroke.Color = Color3.fromRGB(40, 40, 45);
 stopStroke.Thickness = 1;
 
--- Status Label
 local statusLabel = Instance.new("TextLabel", trollPage);
 statusLabel.Size = UDim2.new(0, 240, 0, 25);
 statusLabel.Position = UDim2.new(0, 0, 0, 110);
@@ -392,7 +535,7 @@ startBtn.MouseButton1Click:Connect(function()
     local animator = humanoid:FindFirstChildOfClass("Animator") or humanoid:WaitForChild("Animator");
 
     local success, animObject = pcall(function()
-        local objects = game:GetObjects("rbxassetid:" .. "/" .. "/" .. rawId);
+        local objects = game:GetObjects("rbxassetid://" .. rawId);
         for _, obj in ipairs(objects) do
             if obj:IsA("Animation") then
                 return obj;
@@ -471,50 +614,6 @@ addTheme("Hollow Red", Color3.fromRGB(220, 30, 30));
 addTheme("Viper Green", Color3.fromRGB(30, 220, 90));
 addTheme("Electric Blue", Color3.fromRGB(30, 140, 220));
 addTheme("Cyber Purple", Color3.fromRGB(160, 30, 220));
-
--- ==========================================
--- EXPLOITS TAB CONTENT
--- ==========================================
-local exploitsPage = _G.HollowTabs.Exploits;
-local exploitsLayout = Instance.new("UIListLayout", exploitsPage);
-exploitsLayout.Padding = UDim.new(0, 10);
-
-local activeGameFound = false;
-
-for _, gameData in ipairs(supportedGames) do
-    if string.find(currentGameName, gameData.Key) then
-        activeGameFound = true;
-        
-        local gamePanelFrame = Instance.new("Frame", exploitsPage);
-        gamePanelFrame.Size = UDim2.new(1, 0, 0, 80); 
-        gamePanelFrame.BackgroundTransparency = 1;
-        
-        local panelTitle = createTextLabel(gameData.Name .. " Panel", 16, Enum.Font.GothamMedium, gamePanelFrame);
-        panelTitle.Size = UDim2.new(1, 0, 0, 30);
-
-        local sampleBtn = Instance.new("TextButton", gamePanelFrame);
-        sampleBtn.Size = UDim2.new(0, 220, 0, 35);
-        sampleBtn.Position = UDim2.new(0, 0, 0, 40);
-        sampleBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 25);
-        sampleBtn.Text = "AutoPickUp";
-        sampleBtn.TextColor3 = DEFAULT_THEME_COLOR;
-        sampleBtn.TextSize = 12;
-        sampleBtn.Font = Enum.Font.GothamMedium;
-        Instance.new("UICorner", sampleBtn).CornerRadius = UDim.new(0, 6);
-        registerThemeText(sampleBtn);
-
-        local btnStroke = Instance.new("UIStroke", sampleBtn);
-        btnStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border;
-        btnStroke.Color = DEFAULT_THEME_COLOR;
-        btnStroke.Thickness = 1;
-        registerThemeBorder(btnStroke);
-    end
-end
-
-if not activeGameFound then
-    local noGameLabel = createTextLabel("No active game modules for this place.", 13, Enum.Font.GothamMedium, exploitsPage);
-    noGameLabel.Size = UDim2.new(1, 0, 0, 30);
-end
 
 -- ==========================================
 -- WORKING GAMES TAB CONTENT
@@ -716,18 +815,15 @@ local function startFly()
         if moveDir.Magnitude > 0 then
             local camCF = camera.CFrame
             
-            -- Flatten camera vectors for dot-product calculation
             local flatLook = Vector3.new(camCF.LookVector.X, 0, camCF.LookVector.Z)
             if flatLook.Magnitude > 0 then flatLook = flatLook.Unit end
             
             local flatRight = Vector3.new(camCF.RightVector.X, 0, camCF.RightVector.Z)
             if flatRight.Magnitude > 0 then flatRight = flatRight.Unit end
             
-            -- Calculate directional intent relative to flat ground
             local forwardDot = moveDir:Dot(flatLook)
             local rightDot = moveDir:Dot(flatRight)
             
-            -- Apply full 3D direction vector including vertical camera pitch
             bv.Velocity = (camCF.LookVector * forwardDot + camCF.RightVector * rightDot) * flySpeed
         else
             bv.Velocity = Vector3.zero
