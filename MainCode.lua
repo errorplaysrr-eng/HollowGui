@@ -2,6 +2,7 @@ local workspace = game:GetService("Workspace");
 local players = game:GetService("Players");
 local runService = game:GetService("RunService");
 local statsService = game:GetService("Stats");
+local userInputService = game:GetService("UserInputService");
 local localPlayer = players.LocalPlayer;
 local coreGui = game:GetService("CoreGui");
 local marketplaceService = game:GetService("MarketplaceService");
@@ -78,6 +79,36 @@ _G.MainStroke.Parent = mainFrame;
 registerThemeBorder(_G.MainStroke);
 
 -- ==========================================
+-- TOGGLE SCREEN BUTTON
+-- ==========================================
+local toggleButton = Instance.new("ImageButton", screenGui)
+toggleButton.Name = "UIToggleButton"
+toggleButton.Size = UDim2.new(0, 50, 0, 50)
+
+-- Positioned at the top-center of your screen
+toggleButton.Position = UDim2.new(0.5, -25, 0, 15) 
+toggleButton.BackgroundColor3 = Color3.fromRGB(12, 12, 14)
+toggleButton.BorderSizePixel = 0
+toggleButton.Active = true
+toggleButton.Draggable = true
+
+-- Ensure the ID is passed cleanly without syntax errors
+local imageId = "464093673"
+toggleButton.Image = "rbxassetid://464093673" .. imageId 
+
+Instance.new("UICorner", toggleButton).CornerRadius = UDim.new(1, 0)
+
+local toggleStroke = Instance.new("UIStroke", toggleButton)
+toggleStroke.Thickness = 2
+toggleStroke.Color = DEFAULT_THEME_COLOR
+toggleStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+registerThemeBorder(toggleStroke)
+
+-- Toggle main frame visibility
+toggleButton.MouseButton1Click:Connect(function()
+    mainFrame.Visible = not mainFrame.Visible
+end)
+-- ==========================================
 -- 2. SIDEBAR NAVIGATION
 -- ==========================================
 local sideBar = Instance.new("Frame", mainFrame);
@@ -86,7 +117,6 @@ sideBar.BackgroundColor3 = Color3.fromRGB(8, 8, 10);
 sideBar.BorderSizePixel = 0;
 Instance.new("UICorner", sideBar).CornerRadius = UDim.new(0, 8);
 
--- Subtle separator line between sidebar & content
 local sideBarDivider = Instance.new("Frame", mainFrame);
 sideBarDivider.Size = UDim2.new(0, 1, 0.9, 0);
 sideBarDivider.Position = UDim2.new(0, 150, 0.05, 0);
@@ -111,7 +141,7 @@ local btnLayout = Instance.new("UIListLayout", tabContainer);
 btnLayout.Padding = UDim.new(0, 4);
 btnLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center;
 
--- Header Close Button
+-- Header Close Button (Hides GUI)
 local headerBar = Instance.new("Frame", mainFrame);
 headerBar.Size = UDim2.new(1, -150, 0, 30);
 headerBar.Position = UDim2.new(0, 150, 0, 0);
@@ -125,7 +155,9 @@ closeButton.Text = "✕";
 closeButton.TextColor3 = Color3.fromRGB(150, 150, 150);
 closeButton.TextSize = 14;
 closeButton.Font = Enum.Font.GothamMedium;
-closeButton.MouseButton1Click:Connect(function() screenGui:Destroy(); end);
+closeButton.MouseButton1Click:Connect(function() 
+    mainFrame.Visible = false; 
+end);
 
 -- ==========================================
 -- 3. CONTENT CONTAINER SETUP
@@ -171,7 +203,7 @@ local function createTabButton(name)
         button.BackgroundColor3 = Color3.fromRGB(22, 18, 18);
         button.TextColor3 = _G.MainStroke.Color;
         highlight.Color = _G.MainStroke.Color;
-        highlight.Enabled = true;
+        highlight.Enabled = false;
         currentSelectedButton = button;
     end);
 end
@@ -505,12 +537,15 @@ registerThemeText(wgLabel);
 _G.HollowTabs.Home.Visible = true;
 
 -- ==========================================
--- Global Exploits TAB CONTENT
+-- GLOBAL EXPLOITS TAB CONTENT
 -- ==========================================
 local globalPage = _G.HollowTabs.GlobalExploits
 local globalLayout = Instance.new("UIListLayout", globalPage)
-globalLayout.Padding = UDim.new(0, 6)
+globalLayout.Padding = UDim.new(0, 8)
 
+--------------------------------------------
+-- 1. INSTANT PROMPT INTERACTION
+--------------------------------------------
 local instantPromptActive = false
 local originalDurations = {}
 
@@ -560,5 +595,186 @@ promptButton.MouseButton1Click:Connect(function()
     
     for _, d in ipairs(workspace:GetDescendants()) do 
         setPromptInstant(d) 
+    end
+end)
+
+--------------------------------------------
+-- 2. FLY GUI & SPEED SLIDER SYSTEM
+--------------------------------------------
+local flyActive = false
+local flySpeed = 50
+local flyConnection = nil
+local bv = nil
+local bg = nil
+
+-- Fly Toggle Button
+local flyButton = Instance.new("TextButton", globalPage)
+flyButton.Size = UDim2.new(0, 240, 0, 32)
+flyButton.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+flyButton.Text = ""
+
+Instance.new("UICorner", flyButton).CornerRadius = UDim.new(0, 4)
+local flyStroke = Instance.new("UIStroke", flyButton)
+flyStroke.Color = _G.MainStroke.Color 
+registerThemeBorder(flyStroke)
+
+local flyTextLabel = Instance.new("TextLabel", flyButton)
+flyTextLabel.Size = UDim2.new(1, 0, 1, 0)
+flyTextLabel.BackgroundTransparency = 1
+flyTextLabel.Text = "Fly: OFF"
+flyTextLabel.TextColor3 = _G.MainStroke.Color 
+flyTextLabel.TextSize = 12
+flyTextLabel.Font = Enum.Font.GothamMedium
+registerThemeText(flyTextLabel)
+
+-- Fly Speed Slider Frame
+local sliderFrame = Instance.new("Frame", globalPage)
+sliderFrame.Size = UDim2.new(0, 240, 0, 48)
+sliderFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+Instance.new("UICorner", sliderFrame).CornerRadius = UDim.new(0, 4)
+
+local sliderStroke = Instance.new("UIStroke", sliderFrame)
+sliderStroke.Color = Color3.fromRGB(40, 40, 45)
+
+local sliderLabel = Instance.new("TextLabel", sliderFrame)
+sliderLabel.Size = UDim2.new(1, -10, 0, 20)
+sliderLabel.Position = UDim2.new(0, 8, 0, 4)
+sliderLabel.BackgroundTransparency = 1
+sliderLabel.Text = "Fly Speed: " .. flySpeed
+sliderLabel.TextColor3 = _G.MainStroke.Color
+sliderLabel.TextSize = 11
+sliderLabel.Font = Enum.Font.GothamMedium
+sliderLabel.TextXAlignment = Enum.TextXAlignment.Left
+registerThemeText(sliderLabel)
+
+local sliderTrack = Instance.new("TextButton", sliderFrame)
+sliderTrack.Size = UDim2.new(1, -16, 0, 10)
+sliderTrack.Position = UDim2.new(0, 8, 0, 28)
+sliderTrack.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+sliderTrack.Text = ""
+Instance.new("UICorner", sliderTrack).CornerRadius = UDim.new(0, 5)
+
+local sliderFill = Instance.new("Frame", sliderTrack)
+sliderFill.Size = UDim2.new((flySpeed - 10) / 190, 0, 1, 0)
+sliderFill.BackgroundColor3 = _G.MainStroke.Color
+sliderFill.BorderSizePixel = 0
+Instance.new("UICorner", sliderFill).CornerRadius = UDim.new(0, 5)
+
+-- Core Flight Cleanup
+local function stopFly()
+    if flyConnection then
+        flyConnection:Disconnect()
+        flyConnection = nil
+    end
+    if bv then bv:Destroy() bv = nil end
+    if bg then bg:Destroy() bg = nil end
+    
+    local char = localPlayer.Character
+    if char then
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        if hum then
+            hum.PlatformStand = false
+        end
+    end
+end
+
+-- Core Flight Start
+local function startFly()
+    stopFly()
+    
+    local char = localPlayer.Character
+    if not char then return end
+    local root = char:FindFirstChild("HumanoidRootPart")
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if not root or not hum then return end
+    
+    hum.PlatformStand = true
+    
+    bv = Instance.new("BodyVelocity")
+    bv.MaxForce = Vector3.new(1e9, 1e9, 1e9)
+    bv.Velocity = Vector3.zero
+    bv.Parent = root
+    
+    bg = Instance.new("BodyGyro")
+    bg.MaxTorque = Vector3.new(1e9, 1e9, 1e9)
+    bg.P = 9e4
+    bg.CFrame = root.CFrame
+    bg.Parent = root
+    
+    local camera = workspace.CurrentCamera
+    
+    flyConnection = runService.RenderStepped:Connect(function()
+        if not flyActive or not char or not root or not hum then
+            stopFly()
+            return
+        end
+        
+        hum.PlatformStand = true
+        bg.CFrame = camera.CFrame
+        
+        local moveDir = hum.MoveDirection
+        if moveDir.Magnitude > 0 then
+            local camCF = camera.CFrame
+            
+            -- Flatten camera vectors for dot-product calculation
+            local flatLook = Vector3.new(camCF.LookVector.X, 0, camCF.LookVector.Z)
+            if flatLook.Magnitude > 0 then flatLook = flatLook.Unit end
+            
+            local flatRight = Vector3.new(camCF.RightVector.X, 0, camCF.RightVector.Z)
+            if flatRight.Magnitude > 0 then flatRight = flatRight.Unit end
+            
+            -- Calculate directional intent relative to flat ground
+            local forwardDot = moveDir:Dot(flatLook)
+            local rightDot = moveDir:Dot(flatRight)
+            
+            -- Apply full 3D direction vector including vertical camera pitch
+            bv.Velocity = (camCF.LookVector * forwardDot + camCF.RightVector * rightDot) * flySpeed
+        else
+            bv.Velocity = Vector3.zero
+        end
+    end)
+end
+
+-- Fly Toggle Functionality
+flyButton.MouseButton1Click:Connect(function()
+    flyActive = not flyActive
+    if flyActive then
+        flyTextLabel.Text = "Fly: ON"
+        startFly()
+    else
+        flyTextLabel.Text = "Fly: OFF"
+        stopFly()
+    end
+end)
+
+-- Slider Dragging Mechanics
+local dragging = false
+
+local function updateSlider(input)
+    local minSpeed = 10
+    local maxSpeed = 200
+    local pos = math.clamp((input.Position.X - sliderTrack.AbsolutePosition.X) / sliderTrack.AbsoluteSize.X, 0, 1)
+    sliderFill.Size = UDim2.new(pos, 0, 1, 0)
+    
+    flySpeed = math.floor(minSpeed + pos * (maxSpeed - minSpeed))
+    sliderLabel.Text = "Fly Speed: " .. flySpeed
+end
+
+sliderTrack.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        updateSlider(input)
+    end
+end)
+
+sliderTrack.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+    end
+end)
+
+userInputService.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        updateSlider(input)
     end
 end)
