@@ -163,13 +163,13 @@ local function createTabButton(name)
                 child.BackgroundTransparency = 1; 
                 child.TextColor3 = Color3.fromRGB(160, 160, 170);
                 child.Font = Enum.Font.GothamMedium;
-                child:FindFirstChildOfClass("UIStroke").Enabled = false;
+                local stroke = child:FindFirstChildOfClass("UIStroke")
+                if stroke then stroke.Enabled = false; end
             end
         end
         button.BackgroundTransparency = 0;
         button.BackgroundColor3 = Color3.fromRGB(22, 18, 18);
         button.TextColor3 = _G.MainStroke.Color;
-        buttonTextLabel.Font = Enum.Font.GothamMedium;
         highlight.Color = _G.MainStroke.Color;
         highlight.Enabled = true;
         currentSelectedButton = button;
@@ -339,7 +339,6 @@ startBtn.MouseButton1Click:Connect(function()
     local humanoid = character:FindFirstChildOfClass("Humanoid");
     if not humanoid then return; end
 
-    -- Check RigType
     if humanoid.RigType == Enum.HumanoidRigType.R6 then
         statusLabel.Text = "Error: You need to be in an R15 game!";
         statusLabel.TextColor3 = Color3.fromRGB(255, 70, 70);
@@ -353,7 +352,6 @@ startBtn.MouseButton1Click:Connect(function()
         return;
     end
 
-    -- Stop existing track if one is playing
     if _G.CurrentActiveEmoteTrack then
         _G.CurrentActiveEmoteTrack:Stop();
         _G.CurrentActiveEmoteTrack = nil;
@@ -361,7 +359,6 @@ startBtn.MouseButton1Click:Connect(function()
 
     local animator = humanoid:FindFirstChildOfClass("Animator") or humanoid:WaitForChild("Animator");
 
-    -- Extract Animation object from the Catalog Asset ID container
     local success, animObject = pcall(function()
         local objects = game:GetObjects("rbxassetid://" .. rawId);
         for _, obj in ipairs(objects) do
@@ -444,7 +441,7 @@ addTheme("Electric Blue", Color3.fromRGB(30, 140, 220));
 addTheme("Cyber Purple", Color3.fromRGB(160, 30, 220));
 
 -- ==========================================
--- EXPLOITS TAB CONTENT (Fixed)
+-- EXPLOITS TAB CONTENT
 -- ==========================================
 local exploitsPage = _G.HollowTabs.Exploits;
 local exploitsLayout = Instance.new("UIListLayout", exploitsPage);
@@ -453,7 +450,6 @@ exploitsLayout.Padding = UDim.new(0, 10);
 local activeGameFound = false;
 
 for _, gameData in ipairs(supportedGames) do
-    -- Fixed: Only create elements once per loop iteration to avoid redeclaration errors
     if string.find(currentGameName, gameData.Key) then
         activeGameFound = true;
         
@@ -462,7 +458,9 @@ for _, gameData in ipairs(supportedGames) do
         gamePanelFrame.BackgroundTransparency = 1;
         
         local panelTitle = createTextLabel(gameData.Name .. " Panel", 16, Enum.Font.GothamMedium, gamePanelFrame);
-         local sampleBtn = Instance.new("TextButton", gamePanelFrame);
+        panelTitle.Size = UDim2.new(1, 0, 0, 30);
+
+        local sampleBtn = Instance.new("TextButton", gamePanelFrame);
         sampleBtn.Size = UDim2.new(0, 220, 0, 35);
         sampleBtn.Position = UDim2.new(0, 0, 0, 40);
         sampleBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 25);
@@ -478,69 +476,6 @@ for _, gameData in ipairs(supportedGames) do
         btnStroke.Color = DEFAULT_THEME_COLOR;
         btnStroke.Thickness = 1;
         registerThemeBorder(btnStroke);
-
-
-        local panelTitle = createTextLabel(gameData.Name .. " Panel", 16, Enum.Font.GothamMedium, gamePanelFrame);
-        panelTitle.Size = UDim2.new(1, 0, 0, 30);
-
-        local sampleBtn = Instance.new("TextButton", gamePanelFrame);
-        sampleBtn.Size = UDim2.new(0, 220, 0, 35);
-        sampleBtn.Position = UDim2.new(0, 0, 0, 80);
-        sampleBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 25);
-        sampleBtn.Text = "AutoPickUp";
-        sampleBtn.TextColor3 = DEFAULT_THEME_COLOR;
-        sampleBtn.TextSize = 12;
-        sampleBtn.Font = Enum.Font.GothamMedium;
-        Instance.new("UICorner", sampleBtn).CornerRadius = UDim.new(0, 6);
-        registerThemeText(sampleBtn);
-
-        local btnStroke = Instance.new("UIStroke", sampleBtn);
-        btnStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border;
-        btnStroke.Color = DEFAULT_THEME_COLOR;
-        btnStroke.Thickness = 1;
-        registerThemeBorder(btnStroke);
-
-        local panelTitle = createTextLabel(gameData.Name .. " Panel", 16, Enum.Font.GothamMedium, gamePanelFrame);
-        panelTitle.Size = UDim2.new(1, 0, 0, 30);
-
-        local sampleBtn = Instance.new("TextButton", gamePanelFrame);
-        sampleBtn.Size = UDim2.new(0, 220, 0, 35);
-        sampleBtn.Position = UDim2.new(0, 0, 0, 120);
-        sampleBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 25);
-        sampleBtn.Text = "AutoPickUp";
-        sampleBtn.TextColor3 = DEFAULT_THEME_COLOR;
-        sampleBtn.TextSize = 12;
-        sampleBtn.Font = Enum.Font.GothamMedium;
-        Instance.new("UICorner", sampleBtn).CornerRadius = UDim.new(0, 6);
-        registerThemeText(sampleBtn);
-
-        local btnStroke = Instance.new("UIStroke", sampleBtn);
-        btnStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border;
-        btnStroke.Color = DEFAULT_THEME_COLOR;
-        btnStroke.Thickness = 1;
-        registerThemeBorder(btnStroke);
-
-
-        local panelTitle = createTextLabel(gameData.Name .. " Panel", 16, Enum.Font.GothamMedium, gamePanelFrame);
-        panelTitle.Size = UDim2.new(1, 0, 0, 30);
-
-        local sampleBtn = Instance.new("TextButton", gamePanelFrame);
-        sampleBtn.Size = UDim2.new(0, 220, 0, 35);
-        sampleBtn.Position = UDim2.new(0, 0, 0, 160);
-        sampleBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 25);
-        sampleBtn.Text = "AutoPickUp";
-        sampleBtn.TextColor3 = DEFAULT_THEME_COLOR;
-        sampleBtn.TextSize = 12;
-        sampleBtn.Font = Enum.Font.GothamMedium;
-        Instance.new("UICorner", sampleBtn).CornerRadius = UDim.new(0, 6);
-        registerThemeText(sampleBtn);
-
-        local btnStroke = Instance.new("UIStroke", sampleBtn);
-        btnStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border;
-        btnStroke.Color = DEFAULT_THEME_COLOR;
-        btnStroke.Thickness = 1;
-        registerThemeBorder(btnStroke);
-
     end
 end
 
@@ -568,10 +503,10 @@ wgLabel.Text = "Supported Games:\n\n• PetSimulator99\n• GrowAGarden2\n• Fi
 registerThemeText(wgLabel);
 
 _G.HollowTabs.Home.Visible = true;
+
 -- ==========================================
 -- Global Exploits TAB CONTENT
 -- ==========================================
-
 local globalPage = _G.HollowTabs.GlobalExploits
 local globalLayout = Instance.new("UIListLayout", globalPage)
 globalLayout.Padding = UDim.new(0, 6)
@@ -594,28 +529,25 @@ workspace.DescendantAdded:Connect(function(d)
     end 
 end)
 
--- Textless Base Clickable Button
 local promptButton = Instance.new("TextButton", globalPage)
 promptButton.Size = UDim2.new(0, 240, 0, 32)
 promptButton.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
-promptButton.Text = "" -- Completely textless to kill the engine's bolding bug
+promptButton.Text = ""
 
 Instance.new("UICorner", promptButton).CornerRadius = UDim.new(0, 4)
 local stroke = Instance.new("UIStroke", promptButton)
 stroke.Color = _G.MainStroke.Color 
 registerThemeBorder(stroke) 
 
--- Overlay TextLabel (Guarantees clean, non-bold font weight)
 local buttonTextLabel = Instance.new("TextLabel", promptButton)
 buttonTextLabel.Size = UDim2.new(1, 0, 1, 0)
 buttonTextLabel.BackgroundTransparency = 1
 buttonTextLabel.Text = "Instant Interactions: OFF"
 buttonTextLabel.TextColor3 = _G.MainStroke.Color 
 buttonTextLabel.TextSize = 12
-buttonTextLabel.Font = Enum.Font.GothamMedium -- Clean profile, matches your sidebar perfectly
+buttonTextLabel.Font = Enum.Font.GothamMedium
 registerThemeText(buttonTextLabel)
 
--- Click Functionality
 promptButton.MouseButton1Click:Connect(function()
     instantPromptActive = not instantPromptActive
     
