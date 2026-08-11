@@ -752,7 +752,7 @@ local dragging = false
 
 local function updateSlider(input)
     local minSpeed = 10
-    local maxSpeed = 200
+    local maxSpeed = 400
     local pos = math.clamp((input.Position.X - sliderTrack.AbsolutePosition.X) / sliderTrack.AbsoluteSize.X, 0, 1)
     sliderFill.Size = UDim2.new(pos, 0, 1, 0)
     
