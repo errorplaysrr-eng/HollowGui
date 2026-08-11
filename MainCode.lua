@@ -444,7 +444,7 @@ addTheme("Electric Blue", Color3.fromRGB(30, 140, 220));
 addTheme("Cyber Purple", Color3.fromRGB(160, 30, 220));
 
 -- ==========================================
--- EXPLOITS TAB CONTENT
+-- EXPLOITS TAB CONTENT (Fixed)
 -- ==========================================
 local exploitsPage = _G.HollowTabs.Exploits;
 local exploitsLayout = Instance.new("UIListLayout", exploitsPage);
@@ -453,19 +453,16 @@ exploitsLayout.Padding = UDim.new(0, 10);
 local activeGameFound = false;
 
 for _, gameData in ipairs(supportedGames) do
-    local isPlayingThisGame = string.find(currentGameName, gameData.Key) ~= nil;
-
-    if isPlayingThisGame then
+    -- Fixed: Only create elements once per loop iteration to avoid redeclaration errors
+    if string.find(currentGameName, gameData.Key) then
         activeGameFound = true;
-
+        
         local gamePanelFrame = Instance.new("Frame", exploitsPage);
-        gamePanelFrame.Size = UDim2.new(1, 0, 1, 0);
+        gamePanelFrame.Size = UDim2.new(1, 0, 0, 80); 
         gamePanelFrame.BackgroundTransparency = 1;
-
+        
         local panelTitle = createTextLabel(gameData.Name .. " Panel", 16, Enum.Font.GothamMedium, gamePanelFrame);
-        panelTitle.Size = UDim2.new(1, 0, 0, 30);
-
-        local sampleBtn = Instance.new("TextButton", gamePanelFrame);
+         local sampleBtn = Instance.new("TextButton", gamePanelFrame);
         sampleBtn.Size = UDim2.new(0, 220, 0, 35);
         sampleBtn.Position = UDim2.new(0, 0, 0, 40);
         sampleBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 25);
@@ -543,8 +540,6 @@ for _, gameData in ipairs(supportedGames) do
         btnStroke.Color = DEFAULT_THEME_COLOR;
         btnStroke.Thickness = 1;
         registerThemeBorder(btnStroke);
-
-
 
     end
 end
