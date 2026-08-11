@@ -360,7 +360,7 @@ startBtn.MouseButton1Click:Connect(function()
     local animator = humanoid:FindFirstChildOfClass("Animator") or humanoid:WaitForChild("Animator");
 
     local success, animObject = pcall(function()
-        local objects = game:GetObjects('rbxassetid://' .. rawId);
+        local objects = game:GetObjects("rbxassetid:" .. string.char(47, 47) .. rawId);
         for _, obj in ipairs(objects) do
             if obj:IsA("Animation") then
                 return obj;
